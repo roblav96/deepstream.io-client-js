@@ -5,7 +5,7 @@ declare namespace deepstreamIO {
         }
 
         enum Event {
-                TOO_MANY_AUTH_ATTEMPTS, NOT_AUTHENTICATED, CONNECTION_ERROR, MESSAGE_PERMISSION_ERROR, MESSAGE_PARSE_ERROR, MESSAGE_DENIED, LISTENER_EXISTS, NOT_LISTENING, IS_CLOSED, ACK_TIMEOUT, RESPONSE_TIMEOUT, DELETE_TIMEOUT, UNSOLICITED_MESSAGE, RECORD_NOT_FOUND, VERSION_EXISTS, UNKNOWN_CALLEE
+                TOO_MANY_AUTH_ATTEMPTS, INVALID_AUTH_MSG, NOT_AUTHENTICATED, CONNECTION_ERROR, MESSAGE_PERMISSION_ERROR, MESSAGE_PARSE_ERROR, MESSAGE_DENIED, LISTENER_EXISTS, NOT_LISTENING, IS_CLOSED, ACK_TIMEOUT, RESPONSE_TIMEOUT, DELETE_TIMEOUT, UNSOLICITED_MESSAGE, RECORD_NOT_FOUND, VERSION_EXISTS, UNKNOWN_CALLEE
         }
 
         enum MergeStrategy {
@@ -115,9 +115,8 @@ declare namespace deepstreamIO {
                 /**Immediately executes the callback if the record is ready. Otherwise, it registers it as a callback for the ready event. */
                 whenReady(callback: Function): void;
                 /**Used to set the record's data and can be called with a value. A path can optionally be included. */
-                set(path: string, value: any): void;
-                /**Used to set the record's data and can be called with a value. A path can optionally be included. */
-                set(value: any): void;
+                set(path: string, value: any, callback?: (error: string) => void): void;
+                set(value: any, callback?: (error: string) => void): void;
                 /**Used to return the record's data but if called without an argument, will return all the data. get() can also be used to retrive a specific part by defining a path string. If the part can not be found, undefined will be returned. */
                 get(path?: string): any;
                 /**Registers that a function will be performed whenever the record's value changes. All of the record's data can be subscribed to by providing a callback function or when changes are performed to a specific path within the record.
@@ -201,9 +200,17 @@ declare namespace deepstreamIO {
                 /** Get a record. */
                 getRecord(path: string): Record;
                 /** Get a snapshot of a record without livecycle or subscribtions */
-                snapshot(name: string, callback: Function): void;
+                snapshot(name: string, callback: (error: string, data: any) => void): void;
                 /** Get a list of record names */
                 getList(oath: string): List;
+                /** An AnonymousRecord is a record that can change its name. It acts as a wrapper around an actual record that can be swapped out for another one whilst keeping all bindings intact. */
+                getAnonymousRecord(): Record;
+                /** Check if a record exists and run a callback that contains an error argument and a boolean to indicate whether or not the record exists in deepstream. */
+                has(name: string, callback: (error: string, hasRecord: boolean) => void): void;
+                /** Listen for record subscriptions made by other clients. */
+                listen(pattern: string, callback: (match: string, isSubscribed: boolean, response: any) => void): void;
+                /** Removes a listener that was previously registered using listen() */
+                unlisten(pattern: string): void;
         }
 
         interface EventStatic {
@@ -225,13 +232,13 @@ declare namespace deepstreamIO {
 
         interface RPCStatic {
                 /** Registers the client as a provider for incoming RPCs of a specific name. The callback will be invoked when another client client.rpc.make().*/
-                provide(name: string, callback: (response: RPCResponse) => void): void;
+                provide(name: string, callback: (data:any, response: RPCResponse) => void): void;
                 /**Removes the client as a provider previously registered using provide(). */
                 unprovide(name: string): void;
                 /**
                  * Executes a remote procedure call. callback will be invoked with the returned result or with an error if the RPC failed.
                  */
-                make(name: string, data: any, callback: Function): void;
+                make(name: string, data: any, callback: (error: string, result: any) => void): void;
         }
 
         interface Presence {
