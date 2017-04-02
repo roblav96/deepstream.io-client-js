@@ -189,25 +189,15 @@ describe('utils.parseUrl adds all missing parts of the url', () => {
   })
 })
 
-describe('utils.setImmediate', () => {
+describe('utils.requestIdleTimeout', () => {
   it('callbacks asynchronously as soon as possible', (done) => {
     let syncronous = false
 
-    utils.setImmediate(() => {
+    utils.requestIdleCallback(() => {
       expect(syncronous).toBe(true)
       done()
     })
 
     syncronous = true
-  }, 100)
-
-  it('callbacks with arguments', (done) => {
-    utils.setImmediate((a, b, c, d) => {
-      expect(a).toBe(1)
-      expect(b).toBe(2)
-      expect(c).toBe(3)
-      expect(d).toBe(4)
-      done()
-    }, 1, 2, 3, 4)
   }, 100)
 })

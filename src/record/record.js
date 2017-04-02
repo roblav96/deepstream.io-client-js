@@ -170,11 +170,10 @@ Record.prototype.set = function (pathOrData, dataOrCallback, callback) {
   if (oldValue === newValue) {
     if (typeof callback === 'function') {
       if (this._client.getConnectionState() === C.CONNECTION_STATE.OPEN) {
-        utils.setImmediate(callback, null)
+        utils.requestIdleCallback(callback)
       } else {
-        utils.setImmediate(
-          callback,
-          'Connection error: error updating record as connection was closed'
+        utils.requestIdleCallback(
+          callback.bind(this, 'Connection error: error updating record as connection was closed')
         )
       }
     }
@@ -186,9 +185,8 @@ Record.prototype.set = function (pathOrData, dataOrCallback, callback) {
     config = {}
     config.writeSuccess = true
     if (this._client.getConnectionState() !== C.CONNECTION_STATE.OPEN) {
-      utils.setImmediate(
-        callback,
-        'Connection error: error updating record as connection was closed'
+      utils.requestIdleCallback(
+        callback.bind(this, 'Connection error: error updating record as connection was closed')
       )
     } else {
       this._setUpCallback(this.version, callback)

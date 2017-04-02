@@ -183,11 +183,27 @@ exports.setInterval = function (callback, intervalDuration) {
  *
  * @public
  */
-exports.setImmediate = typeof setImmediate === 'function' ? setImmediate : function () {
-  const args = Array.prototype.slice.call(arguments) // eslint-disable-line
-  args.splice(1, 0, 0)
-  setTimeout.apply(this, args)
-}
+exports.requestIdleCallback = (!exports.isNode &&
+  window.requestIdleCallback &&
+  window.requestIdleCallback.bind(window)) ||
+  function (cb) {
+    const start = Date.now()
+    return setTimeout(() => {
+      cb({
+        didTimeout: false,
+        timeRemaining () {
+          return Math.max(0, 50 - (Date.now() - start))
+        }
+      })
+    }, 1)
+  }
+
+exports.cancelIdleCallback = (!exports.isNode &&
+  window.cancelIdleCallback &&
+  window.cancelIdleCallback.bind(window)) ||
+  function (id) {
+    clearTimeout(id)
+  }
 
 /**
  * Used to see if a protocol is specified within the url
